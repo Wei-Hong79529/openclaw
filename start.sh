@@ -56,13 +56,14 @@ fi
 # -------------------------------
 # 3. 啟動程序
 # -------------------------------
-echo "Debug: Preparing to exec node..."
-FINAL_BIND="0.0.0.0" # 強制 0.0.0.0 以避免 lan 錯誤
+# 🚀 關鍵修正：將 FINAL_BIND 改為 OpenClaw 認可的 "lan"
+FINAL_BIND="lan"
 FINAL_PORT="${OPENCLAW_GATEWAY_PORT:-18789}"
 
 echo "Starting OpenClaw on $FINAL_BIND:$FINAL_PORT..."
-sleep 3
+sleep 2 
 
+# 執行 OpenClaw
 exec node dist/index.js gateway \
   --allow-unconfigured \
   --bind "$FINAL_BIND" \

@@ -21,9 +21,10 @@ EOF
 fi
 
 # -------------------------------
-# 2. Provider（安全注入）
+# 2. Provider（注入 Gemini 3.0 Flash）
 # -------------------------------
-if [ -n "${ZEABUR_AI_HUB_API_KEY:-}" ] && ! grep -q '"zeabur-ai"' "$CONFIG_FILE"; then
+if [ -n "${GEMINI_API_KEY:-}" ] && ! grep -q '"google-gemini"' "$CONFIG_FILE"; then
+  echo "Configuring Gemini 3.0 Flash..."
   node <<'NODE'
 const fs = require("fs");
 const path = "/home/node/.openclaw/openclaw.json";
@@ -34,24 +35,26 @@ try {
   c.models = c.models || {};
   c.models.providers = c.models.providers || {};
 
-  c.models.providers["zeabur-ai"] = {
-    baseUrl: "https://hnd1.aihub.zeabur.ai/v1",
-    apiKey: process.env.ZEABUR_AI_HUB_API_KEY,
-    api: "openai-completions",
+  // 設定 Google Gemini Provider
+  c.models.providers["google-gemini"] = {
+    baseUrl: "https://generativelanguage.googleapis.com/v1beta",
+    apiKey: process.env.GEMINI_API_KEY,
+    api: "google-gemini",
     models: [
-      { id: "gpt-5-mini", name: "GPT-5 Mini", input: ["text"] }
+      { id: "gemini-3.0-flash", name: "Gemini 3.0 Flash", input: ["text", "image"] }
     ]
   };
 
   c.agents = c.agents || {};
   c.agents.defaults = c.agents.defaults || {};
   c.agents.defaults.model = c.agents.defaults.model || {
-    primary: "zeabur-ai/gpt-5-mini"
+    primary: "google-gemini/gemini-3.0-flash"
   };
 
   fs.writeFileSync(path, JSON.stringify(c, null, 2));
+  console.log("Gemini 3.0 Flash configured successfully.");
 } catch (e) {
-  console.error(e);
+  console.error("Failed to inject Gemini config:", e);
 }
 NODE
 fi

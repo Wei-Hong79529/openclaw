@@ -22,7 +22,7 @@ fi
 # 2. Provider 注入 (Gemini 1.5 Flash)
 # -------------------------------
 if [ -n "${GEMINI_API_KEY:-}" ]; then
-  echo "Debug: Injecting Gemini 1.5 Flash..."
+  echo "Debug: Injecting gemini-3-flash-preview..."
   node <<'NODE'
 const fs = require('fs');
 const path = "/home/node/.openclaw/openclaw.json";
@@ -36,18 +36,18 @@ try {
   // ✨ 關鍵修正：api 必須是 "google-generative-ai"
   config.models.providers['google-gemini'] = {
     baseUrl: 'https://generativelanguage.googleapis.com/v1beta',
-    apiKey: process.env.GEMINI_API_KEY,
+    apiKey: process.env.GOOGLE_API_KEY,
     api: 'google-generative-ai',
     models: [{
-        id: 'gemini-1.5-flash-latest',
-        name: 'gemini-1.5-flash',
+        id: 'gemini-3-flash-preview',
+        name: 'gemini-3-flash-preview',
         input: ['text', 'image']
       }]
   };
 
   config.agents = config.agents || {};
   config.agents.defaults = {
-  model: { primary: 'google-gemini/gemini-1.5-flash-latest' }
+  model: { primary: 'google-gemini/gemini-3-flash-preview' }
   };
 
   fs.writeFileSync(path, JSON.stringify(config, null, 2));

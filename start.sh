@@ -38,11 +38,17 @@ try {
     baseUrl: 'https://generativelanguage.googleapis.com/v1beta',
     apiKey: process.env.GEMINI_API_KEY,
     api: 'google-generative-ai',
-    models: [{ id: 'gemini-3.0-flash', name: 'Gemini 3.0 Flash', input: ['text', 'image'] }]
+    models: [{
+        id: 'gemini-3-flash-preview',
+        name: 'Gemini 3 Flash',
+        input: ['text', 'image']
+      }]
   };
 
   config.agents = config.agents || {};
-  config.agents.defaults = { model: { primary: 'google-gemini/gemini-3.0-flash' } };
+  config.agents.defaults = {
+  model: { primary: 'google-gemini/gemini-3-flash-preview' }
+  };
 
   fs.writeFileSync(path, JSON.stringify(config, null, 2));
   console.log('Debug: Gemini Injection Success');

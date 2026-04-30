@@ -37,7 +37,7 @@ try {
   config.models.providers['google-gemini'] = {
     baseUrl: 'https://generativelanguage.googleapis.com/v1beta',
     apiKey: process.env.GEMINI_API_KEY,
-    api: 'google-generative-ai', 
+    api: 'google-generative-ai',
     models: [{ id: 'gemini-3.0-flash', name: 'Gemini 3.0 Flash', input: ['text', 'image'] }]
   };
 

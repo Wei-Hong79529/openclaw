@@ -1,0 +1,83 @@
+#!/bin/sh
+set -eu
+
+echo "=== [OpenClaw Production Boot] ==="
+
+CONFIG_DIR="/home/node/.openclaw"
+CONFIG_FILE="$CONFIG_DIR/openclaw.json"
+WORKSPACE_DIR="${OPENCLAW_WORKSPACE_DIR:-/home/node/.openclaw/workspace}"
+
+mkdir -p "$CONFIG_DIR" "$WORKSPACE_DIR/memory"
+chmod 700 "$CONFIG_DIR"
+
+# -------------------------------
+# 1. 初始化 config（只跑一次）
+# -------------------------------
+if [ ! -f "$CONFIG_FILE" ]; then
+  echo "Creating config..."
+  cat >"$CONFIG_FILE" <<EOF
+{"gateway":{"controlUi":{"allowInsecureAuth":true}}}
+EOF
+  chmod 600 "$CONFIG_FILE"
+fi
+
+# -------------------------------
+# 2. 注入 provider（只做一次）
+# -------------------------------
+if [ -n "${ZEABUR_AI_HUB_API_KEY:-}" ] && ! grep -q '"zeabur-ai"' "$CONFIG_FILE"; then
+  echo "Injecting provider..."
+
+  node <<'NODE'
+const fs = require("fs");
+const path = "/home/node/.openclaw/openclaw.json";
+
+try {
+  let c = JSON.parse(fs.readFileSync(path, "utf8"));
+
+  c.models = c.models || {};
+  c.models.providers = c.models.providers || {};
+
+  c.models.providers["zeabur-ai"] = {
+    baseUrl: "https://hnd1.aihub.zeabur.ai/v1",
+    apiKey: process.env.ZEABUR_AI_HUB_API_KEY,
+    api: "openai-completions",
+    models: [
+      { id: "gpt-5-mini", name: "GPT-5 Mini", input: ["text"] }
+    ]
+  };
+
+  c.agents = c.agents || {};
+  c.agents.defaults = c.agents.defaults || {};
+  c.agents.defaults.model = c.agents.defaults.model || {
+    primary: "zeabur-ai/gpt-5-mini"
+  };
+
+  fs.writeFileSync(path, JSON.stringify(c, null, 2));
+  console.log("Provider injected");
+} catch (e) {
+  console.error("Config error:", e.message);
+}
+NODE
+fi
+
+# -------------------------------
+# 3. workspace
+# -------------------------------
+if [ ! -f "$WORKSPACE_DIR/MEMORY.md" ]; then
+  cat >"$WORKSPACE_DIR/MEMORY.md" <<EOF
+# Memory
+
+This file stores long-term memories.
+EOF
+fi
+
+# -------------------------------
+# 4. 啟動主服務（唯一長期進程）
+# -------------------------------
+echo "Starting OpenClaw..."
+
+exec node dist/index.js gateway \
+  --allow-unconfigured \
+  --bind "${OPENCLAW_GATEWAY_BIND:-0.0.0.0}" \
+  --port "${OPENCLAW_GATEWAY_PORT:-18789}" \
+  --token "${OPENCLAW_GATEWAY_TOKEN:-}"

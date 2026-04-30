@@ -39,7 +39,7 @@ try {
     apiKey: process.env.GEMINI_API_KEY,
     api: 'google-generative-ai',
     models: [{
-        id: 'gemini-1.5-flash',
+        id: 'gemini-1.5-flash-latest',
         name: 'gemini-1.5-flash',
         input: ['text', 'image']
       }]
@@ -47,7 +47,7 @@ try {
 
   config.agents = config.agents || {};
   config.agents.defaults = {
-  model: { primary: 'google-gemini/gemini-1.5-flash' }
+  model: { primary: 'google-gemini/gemini-1.5-flash-latest' }
   };
 
   fs.writeFileSync(path, JSON.stringify(config, null, 2));

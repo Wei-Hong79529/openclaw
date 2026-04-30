@@ -19,10 +19,10 @@ if [ ! -f "$CONFIG_FILE" ]; then
 fi
 
 # -------------------------------
-# 2. Provider 注入 (Gemini 3.0 Flash)
+# 2. Provider 注入 (Gemini 1.5 Flash)
 # -------------------------------
 if [ -n "${GEMINI_API_KEY:-}" ]; then
-  echo "Debug: Injecting Gemini 3.0 Flash..."
+  echo "Debug: Injecting Gemini 1.5 Flash..."
   node <<'NODE'
 const fs = require('fs');
 const path = "/home/node/.openclaw/openclaw.json";
@@ -39,15 +39,15 @@ try {
     apiKey: process.env.GEMINI_API_KEY,
     api: 'google-generative-ai',
     models: [{
-        id: 'gemini-3-flash-preview',
-        name: 'Gemini 3 Flash',
+        id: 'gemini-1.5-flash',
+        name: 'gemini-1.5-flash',
         input: ['text', 'image']
       }]
   };
 
   config.agents = config.agents || {};
   config.agents.defaults = {
-  model: { primary: 'google-gemini/gemini-3-flash-preview' }
+  model: { primary: 'google-gemini/gemini-1.5-flash' }
   };
 
   fs.writeFileSync(path, JSON.stringify(config, null, 2));

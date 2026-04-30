@@ -2,19 +2,18 @@ FROM ghcr.io/openclaw/openclaw:2026.4.26
 
 USER root
 
-# 預先建立資料夾（避免權限問題）
-RUN mkdir -p /home/node/.openclaw
+# 1. 建立資料夾並預先賦予 node 使用者權限
+RUN mkdir -p /home/node/.openclaw && \
+    chown -R node:node /home/node/.openclaw
 
-# 🚀 關鍵：預先觸發 runtime deps 安裝（zero-lock 核心）
-RUN node dist/index.js gateway --help || true
-
-# 加入腳本
+# 2. 加入腳本
 COPY start.sh /start.sh
-COPY healthcheck.sh /healthcheck.sh
+# 建議移除內部的 healthcheck.sh，改用 Zeabur 控制台的 Networking 檢查
+RUN chmod +x /start.sh
 
-RUN chmod +x /start.sh /healthcheck.sh
+# 3. 關鍵：切換回 node 使用者，避免 root 執行 Node.js 產生安全性與路徑問題
+USER node
 
-HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
-  CMD /healthcheck.sh
-
+# 4. 移除 Docker 內建 HEALTHCHECK (Zeabur 會自動透過 TCP Probe 檢查)
+# 內建檢查過於頻繁會導致啟動階段被誤殺
 ENTRYPOINT ["/start.sh"]

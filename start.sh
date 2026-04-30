@@ -1,7 +1,7 @@
 #!/bin/sh
 set -eu
 
-echo "=== [OpenClaw Production Boot] ==="
+echo "=== [OpenClaw Zero-Lock Boot] ==="
 
 CONFIG_DIR="/home/node/.openclaw"
 CONFIG_FILE="$CONFIG_DIR/openclaw.json"
@@ -11,10 +11,9 @@ mkdir -p "$CONFIG_DIR" "$WORKSPACE_DIR/memory"
 chmod 700 "$CONFIG_DIR"
 
 # -------------------------------
-# 1. 初始化 config（只跑一次）
+# 1. Config（只初始化）
 # -------------------------------
 if [ ! -f "$CONFIG_FILE" ]; then
-  echo "Creating config..."
   cat >"$CONFIG_FILE" <<EOF
 {"gateway":{"controlUi":{"allowInsecureAuth":true}}}
 EOF
@@ -22,11 +21,9 @@ EOF
 fi
 
 # -------------------------------
-# 2. 注入 provider（只做一次）
+# 2. Provider（安全注入）
 # -------------------------------
 if [ -n "${ZEABUR_AI_HUB_API_KEY:-}" ] && ! grep -q '"zeabur-ai"' "$CONFIG_FILE"; then
-  echo "Injecting provider..."
-
   node <<'NODE'
 const fs = require("fs");
 const path = "/home/node/.openclaw/openclaw.json";
@@ -53,26 +50,21 @@ try {
   };
 
   fs.writeFileSync(path, JSON.stringify(c, null, 2));
-  console.log("Provider injected");
 } catch (e) {
-  console.error("Config error:", e.message);
+  console.error(e);
 }
 NODE
 fi
 
 # -------------------------------
-# 3. workspace
+# 3. Workspace
 # -------------------------------
 if [ ! -f "$WORKSPACE_DIR/MEMORY.md" ]; then
-  cat >"$WORKSPACE_DIR/MEMORY.md" <<EOF
-# Memory
-
-This file stores long-term memories.
-EOF
+  echo "# Memory" > "$WORKSPACE_DIR/MEMORY.md"
 fi
 
 # -------------------------------
-# 4. 啟動主服務（唯一長期進程）
+# 4. 啟動（唯一進程）
 # -------------------------------
 echo "Starting OpenClaw..."
 

@@ -78,8 +78,11 @@ chmod -R 777 "$CONFIG_DIR"
 
 # 確保我們監聽的是 0.0.0.0 (重要！)
 # 有些版本會優先讀取 config 裡的設定，我們用參數強制蓋掉它
+
+sleep 5  # 給 Node.js 一點啟動緩衝
+
 exec node dist/index.js gateway \
   --allow-unconfigured \
-  --bind "0.0.0.0" \
+  --bind "${OPENCLAW_GATEWAY_BIND:-0.0.0.0}" \
   --port "${OPENCLAW_GATEWAY_PORT:-18789}" \
   --token "${OPENCLAW_GATEWAY_TOKEN:-}"  

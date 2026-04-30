@@ -61,7 +61,13 @@ FINAL_BIND="lan"
 FINAL_PORT="${OPENCLAW_GATEWAY_PORT:-18789}"
 
 echo "Starting OpenClaw on $FINAL_BIND:$FINAL_PORT..."
-sleep 5
+#!/bin/bash
+
+# 清理可能的舊鎖文件
+rm -rf /home/node/.openclaw/plugin-runtime-deps/*/.*lock* 2>/dev/null || true
+
+# 給 OpenClaw 足夠的時間完全啟動（包括插件依賴安裝）
+sleep 30
 
 # 執行 OpenClaw
 exec node dist/index.js gateway \

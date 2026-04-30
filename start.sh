@@ -66,17 +66,17 @@ fi
 # -------------------------------
 # 4. 啟動（唯一進程）
 # -------------------------------
-echo "Starting OpenClaw..."
+echo "Starting OpenClaw on Port: ${OPENCLAW_GATEWAY_PORT:-18789}..."
 echo "Target Port: ${OPENCLAW_GATEWAY_PORT:-18789}"
 echo "Config File: $(ls -l $CONFIG_FILE)"
 
 # 確保權限完全開放給執行者
 chmod -R 777 "$CONFIG_DIR"
 
-echo "Starting OpenClaw..."
-
+# 確保我們監聽的是 0.0.0.0 (重要！)
+# 有些版本會優先讀取 config 裡的設定，我們用參數強制蓋掉它
 exec node dist/index.js gateway \
   --allow-unconfigured \
-  --bind "${OPENCLAW_GATEWAY_BIND:-0.0.0.0}" \
+  --bind "0.0.0.0" \
   --port "${OPENCLAW_GATEWAY_PORT:-18789}" \
-  --token "${OPENCLAW_GATEWAY_TOKEN:-}"
+  --token "${OPENCLAW_GATEWAY_TOKEN:-}"  

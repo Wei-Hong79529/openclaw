@@ -23,14 +23,27 @@ fi
 # -------------------------------
 if [ -n "${GEMINI_API_KEY:-}" ]; then
   echo "Debug: Injecting Gemini 3.0 Flash..."
-  # 這裡增加更多 console.log 以便在 Zeabur Runtime Log 看到進度
   node <<'NODE'
 const fs = require('fs');
 const path = "/home/node/.openclaw/openclaw.json";
 try {
   const data = fs.readFileSync(path, 'utf8');
   let config = JSON.parse(data || '{}');
-  // ... 注入邏輯 ...
+
+  config.models = config.models || {};
+  config.models.providers = config.models.providers || {};
+
+  // ✨ 關鍵修正：api 必須是 "google-generative-ai"
+  config.models.providers['google-gemini'] = {
+    baseUrl: 'https://generativelanguage.googleapis.com/v1beta',
+    apiKey: process.env.GEMINI_API_KEY,
+    api: 'google-generative-ai', 
+    models: [{ id: 'gemini-3.0-flash', name: 'Gemini 3.0 Flash', input: ['text', 'image'] }]
+  };
+
+  config.agents = config.agents || {};
+  config.agents.defaults = { model: { primary: 'google-gemini/gemini-3.0-flash' } };
+
   fs.writeFileSync(path, JSON.stringify(config, null, 2));
   console.log('Debug: Gemini Injection Success');
 } catch (e) {

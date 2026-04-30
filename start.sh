@@ -61,7 +61,7 @@ FINAL_BIND="lan"
 FINAL_PORT="${OPENCLAW_GATEWAY_PORT:-18789}"
 
 echo "Starting OpenClaw on $FINAL_BIND:$FINAL_PORT..."
-sleep 20
+sleep 5
 
 # 執行 OpenClaw
 exec node dist/index.js gateway \

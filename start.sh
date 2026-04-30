@@ -67,6 +67,13 @@ fi
 # 4. 啟動（唯一進程）
 # -------------------------------
 echo "Starting OpenClaw..."
+echo "Target Port: ${OPENCLAW_GATEWAY_PORT:-18789}"
+echo "Config File: $(ls -l $CONFIG_FILE)"
+
+# 確保權限完全開放給執行者
+chmod -R 777 "$CONFIG_DIR"
+
+echo "Starting OpenClaw..."
 
 exec node dist/index.js gateway \
   --allow-unconfigured \

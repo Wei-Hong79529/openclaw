@@ -14,6 +14,8 @@ RUN chmod +x /start.sh
 # 3. 關鍵：切換回 node 使用者，避免 root 執行 Node.js 產生安全性與路徑問題
 USER node
 
-# 4. 移除 Docker 內建 HEALTHCHECK (Zeabur 會自動透過 TCP Probe 檢查)
+# 4. 設置健康檢查 - 給 OpenClaw 足夠的啟動時間
+HEALTHCHECK --start-period=300s --interval=30s --timeout=10s --retries=3 \
+    CMD curl -f http://localhost:18789/__openclaw__/canvas/ || exit 1
 # 內建檢查過於頻繁會導致啟動階段被誤殺
 ENTRYPOINT ["/start.sh"]

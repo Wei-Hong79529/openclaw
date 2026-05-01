@@ -2,20 +2,22 @@ FROM ghcr.io/openclaw/openclaw:2026.4.26
 
 USER root
 
-# 1. 建立資料夾並預先賦予 node 使用者權限
-RUN mkdir -p /home/node/.openclaw && \
-    chown -R node:node /home/node/.openclaw
+# 1. 安裝 gosu (用來在 start.sh 安全切換使用者)
+# 同時建立資料夾，確保環境乾淨
+RUN apt-get update && apt-get install -y gosu && \
+    rm -rf /var/lib/apt/lists/* && \
+    mkdir -p /home/node/.openclaw
 
 # 2. 加入腳本
 COPY start.sh /start.sh
-# 建議移除內部的 healthcheck.sh，改用 Zeabur 控制台的 Networking 檢查
 RUN chmod +x /start.sh
 
-# 3. 關鍵：切換回 node 使用者，避免 root 執行 Node.js 產生安全性與路徑問題
-USER node
+# 3. 移除原本的 USER node
+# 理由：若在這裡切換，容器啟動時就沒權限修正 Zeabur 掛載的 Volume 權限
+# 我們改由 start.sh 內部完成 chown 後再切換身分
 
-# 4. 設置健康檢查 - 給 OpenClaw 足夠的啟動時間
+# 4. 設置健康檢查
 HEALTHCHECK --start-period=300s --interval=30s --timeout=10s --retries=3 \
     CMD curl -f http://localhost:18789/__openclaw__/canvas/ || exit 1
-# 內建檢查過於頻繁會導致啟動階段被誤殺
+
 ENTRYPOINT ["/start.sh"]

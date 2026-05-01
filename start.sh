@@ -19,9 +19,9 @@ if [ ! -f "$CONFIG_FILE" ]; then
 fi
 
 # -------------------------------
-# 2. Provider 注入 (Gemini 1.5 Flash)
+# 2. Provider 注入 (Gemini 3.1 Flash)
 # -------------------------------
-if [ -n "${GEMINI_API_KEY:-}" ]; then
+if [ -n "${GOOGLE_API_KEY:-}" ]; then
   echo "Debug: Injecting gemini-3-flash-preview..."
   node <<'NODE'
 const fs = require('fs');
